@@ -1,0 +1,22 @@
+[
+  {
+    "key": "Path",
+    "type": "input",
+    "templateOptions": {
+      "label": "Path",
+      "placeholder": "C:HelloID",
+      "description": "The path to the blacklist file",
+      "required": true
+    }
+  },
+  {
+    "key": "Filename",
+    "type": "input",
+    "templateOptions": {
+      "label": "Filename",
+      "placeholder": "UniqueDB.db",
+      "description": "Filename for blacklist database file",
+      "required": true
+    }
+  }
+]
