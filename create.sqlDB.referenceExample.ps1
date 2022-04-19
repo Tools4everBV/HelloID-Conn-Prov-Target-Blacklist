@@ -120,7 +120,7 @@ try {
     $uniqueValue = Get-Random -InputObject $randomRange
 
     # Update Database with new row
-    Write-Verbose "Upating table '$($table)', column '$($column)' with value '$($uniqueValue)'"
+    Write-Verbose "Updating table '$($table)', column '$($column)' with value '$($uniqueValue)'"
     $queryInsert = "
     INSERT INTO $table
         ($column)
