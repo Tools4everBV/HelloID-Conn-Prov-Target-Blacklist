@@ -1,0 +1,35 @@
+[
+  {
+    "key": "connectionString",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "Connection string",
+      "placeholder": "Data Source=server\\instance;Trusted_Connection=True;Initial Catalog=database;",
+      "description": "The connection string used to connect to the SQL database Must include Initial Catalog",
+      "required": true
+    }
+  },
+  {
+    "key": "table",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "Table",
+      "placeholder": "blacklist",
+      "description": "The table in which the blacklist values reside",
+      "required": true
+    }
+  },
+  {
+    "key": "column",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "Column",
+      "placeholder": "uniqueValue",
+      "description": "The column in which the blacklist values reside",
+      "required": true
+    }
+  }
+]
