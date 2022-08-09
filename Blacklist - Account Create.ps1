@@ -17,10 +17,13 @@ $account = [PSCustomObject]@{
 #Default variables for blacklist
 $Path = $config.path
 $db = $Path + $config.filename;
+$cutoffdays = $config.cutoffdate
 $success = $False;
 
-#$db = "C:\Database\UniqueDB.db";
-
+$lockdate = (Get-date).addDays($cutoffdays).ToString("yyyy-dd-MM")
+if($cutoffdays -eq 0){
+    $lockdate = (Get-date).addYears(100).ToString("yyyy-dd-MM")
+}
 
 if(-Not($dryRun -eq $True)) {
     #Add libs
@@ -35,7 +38,7 @@ if(-Not($dryRun -eq $True)) {
 		    $conn = New-Object -TypeName System.Data.SQLite.SQLiteConnection
 			$conn.ConnectionString = "Data Source=$db"
 			$conn.Open()
-            $sql = "INSERT INTO [Values] (Value) VALUES ('$sAMAccountName')";
+            $sql = "INSERT INTO [Values] (Value, Date) VALUES ('$sAMAccountName', '$lockdate')";
 			$cmd = $conn.CreateCommand()
             $cmd.CommandText = $sql
             $dataAdapter = New-Object -TypeName System.Data.SQLite.SQLiteDataAdapter $cmd
