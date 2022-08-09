@@ -18,5 +18,15 @@
       "description": "Filename for blacklist database file",
       "required": true
     }
+  },
+  {
+    "key": "Cutoffdate",
+    "type": "input",
+    "templateOptions": {
+      "label": "Cutoffdate",
+      "placeholder": "0",
+      "description": "Amount of days attribute cannot be reused (0 = infinite)",
+      "required": true
+    }
   }
 ]
