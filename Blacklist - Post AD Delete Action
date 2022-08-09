@@ -1,0 +1,73 @@
+#Initialize default properties
+$p    = $person | ConvertFrom-Json
+$m    = $manager | ConvertFrom-Json
+$aRef = $accountReference | ConvertFrom-Json
+$mRef = $managerAccountReference | ConvertFrom-Json
+
+$eRef = $entitlementContext | ConvertFrom-Json
+$samAccountName = $eRef.adUser.SamAccountName
+$success = $false
+
+$auditLogs = [Collections.Generic.List[PSCustomObject]]::new()
+
+if (-Not($dryRun -eq $false)) {
+    $db = "C:/Helloid/uniquedb.db"
+    $cutoffdays = 70
+
+    write-verbose -verbose $db
+
+    $lockdate = (Get-date).addDays($cutoffdays).ToString("yyyy-dd-MM")
+    if($cutoffdays -eq 0){
+        $lockdate = (Get-date).addYears(100).ToString("yyyy-dd-MM")
+    }
+
+    #Add libs
+    Add-type -Path "C:\Program Files\System.Data.SQLite\2015\bin\System.Data.SQLite.dll"; #Moet deze configurabel?
+    Try{
+     
+    # Append SQL table
+    Write-Verbose "$sAMAccountName" -verbose
+
+    If (Test-Path $db) {
+        Write-Verbose "$sAMAccountName" -verbose
+	      $conn = New-Object -TypeName System.Data.SQLite.SQLiteConnection
+		    $conn.ConnectionString = "Data Source=$db"
+		    $conn.Open()
+        $sql = "INSERT INTO [Values] (Value, Date) VALUES ('$sAMAccountName', '$lockdate')";
+		    $cmd = $conn.CreateCommand()
+        $cmd.CommandText = $sql
+        $dataAdapter = New-Object -TypeName System.Data.SQLite.SQLiteDataAdapter $cmd
+        $dataset = New-Object System.Data.DataSet
+        [void]$dataAdapter.Fill($dataset)
+            
+	      $cmd.Dispose()
+		    $conn.Close()
+
+        $Success = $True
+        $auditMessage = "Succes";
+        Write-Verbose -Verbose "$ValueToCheck added to SQLLite db!"
+        }   
+    }
+    Catch{
+        $auditMessage = "Blacklist appending failed"
+    }
+
+} else {
+    # Write dry run logic here
+}
+
+$auditLogs.Add([PSCustomObject]@{
+        # Action = "DeleteAccount" # Optionally specify a different action for this audit log
+        Message  = "Post delete action script for user $($p.commonName)"
+        IsError  = $false
+    }
+)
+
+#build up result
+$result = [PSCustomObject]@{
+	Success   = $success
+    AuditLogs = $auditLogs
+}
+
+#send result back
+Write-Output $result | ConvertTo-Json -Depth 10
