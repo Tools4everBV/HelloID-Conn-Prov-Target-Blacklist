@@ -14,7 +14,7 @@ Try {
             $conn = New-Object -TypeName System.Data.SQLite.SQLiteConnection
             $conn.ConnectionString = "Data Source=$db"
             $conn.Open()
-            $sql = "SELECT * FROM [Values] WHERE [Value] = 'Rutger' AND [Date] > DATE('now') COLLATE NOCASE";
+            $sql = "SELECT * FROM [Values] WHERE [Value] = '$ValueToCheck' AND [Date] > DATE('now') COLLATE NOCASE";
             $cmd = $conn.CreateCommand()
             $cmd.CommandText = $sql
             $dataAdapter = New-Object -TypeName System.Data.SQLite.SQLiteDataAdapter $cmd
