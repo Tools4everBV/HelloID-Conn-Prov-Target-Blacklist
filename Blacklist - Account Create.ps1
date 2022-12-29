@@ -50,7 +50,7 @@ if(-Not($dryRun -eq $True)) {
 
             $Success = $True
             $auditMessage = "Succes";
-            Write-Verbose -Verbose "$ValueToCheck added to SQLLite db!"
+            Write-Verbose -Verbose "$sAMAccountName added to SQLLite db!"
         }   
     }
     Catch{
