@@ -215,6 +215,7 @@ finally {
     if (-NOT($auditLogs.IsError -contains $true)) {
         $success = $true
     }
+    
     # Send results
     $result = [PSCustomObject]@{
         Success          = $success
