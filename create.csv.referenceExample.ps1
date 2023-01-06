@@ -37,7 +37,7 @@ $account = [PSCustomObject]@{
 # $dryRun = $false
 
 try {
-    # Get current CSV data
+    # Export data to CSV
     try {
         if (-Not($dryRun -eq $True)) {
             Write-Verbose "Exporting data to CSV '$($csvPath)'. Account object: $($account|ConvertTo-Json)"
