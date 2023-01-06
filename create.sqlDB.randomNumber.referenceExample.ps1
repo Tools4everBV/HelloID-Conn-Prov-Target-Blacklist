@@ -59,7 +59,7 @@ function Invoke-SQLQuery {
         $Data.value = $null
 
         # Initialize connection and execute query
-        if(-not[String]::IsNullOrEmpty($Username) -and -not[String]::IsNullOrEmpty($Password)){
+        if (-not[String]::IsNullOrEmpty($Username) -and -not[String]::IsNullOrEmpty($Password)) {
             # First create the PSCredential object
             $securePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
             $credential = [System.Management.Automation.PSCredential]::new($Username, $securePassword)
@@ -68,12 +68,12 @@ function Invoke-SQLQuery {
             $credential.Password.MakeReadOnly()
  
             # Create the SqlCredential object
-            $sqlCredential = [System.Data.SqlClient.SqlCredential]::new($credential.username,$credential.password)
+            $sqlCredential = [System.Data.SqlClient.SqlCredential]::new($credential.username, $credential.password)
         }
         # Connect to the SQL server
         $SqlConnection = [System.Data.SqlClient.SqlConnection]::new()
         $SqlConnection.ConnectionString = “$ConnectionString”
-        if(-not[String]::IsNullOrEmpty($sqlCredential)){
+        if (-not[String]::IsNullOrEmpty($sqlCredential)) {
             $SqlConnection.Credential = $sqlCredential
         }
         $SqlConnection.Open()
@@ -108,7 +108,7 @@ function Invoke-SQLQuery {
 }
 #end region functions
 
-try{
+try {
     # Query current data in database
     try {
         $querySelect = "
@@ -122,7 +122,7 @@ try{
         $querySelectResult = [System.Collections.ArrayList]::new()
         $querySelectSplatParams = @{
             ConnectionString = $connectionString
-            SqlQuery = $querySelect
+            SqlQuery         = $querySelect
         }
         Invoke-SQLQuery @querySelectSplatParams -Data ([ref]$querySelectResult)
 
@@ -155,7 +155,7 @@ try{
         $currentValues = $querySelectResult."$($column)" | Sort-Object 
         $excludeRange = $currentValues
         $randomRange = $inputRange | Where-Object { $excludeRange -notcontains $_ }
-        if($randomRange -eq $null){
+        if ($randomRange -eq $null) {
             throw "Error generating random value: No more values allowed. Please adjust the range. Current range: $($inputRange | Select-Object -First 1) to $($inputRange | Select-Object -Last 1)"
         }
         $uniqueValue = Get-Random -InputObject $randomRange
@@ -172,7 +172,7 @@ try{
         $queryInsertResult = [System.Collections.ArrayList]::new()
         $queryInsertSplatParams = @{
             ConnectionString = $connectionString
-            SqlQuery = $queryInsert
+            SqlQuery         = $queryInsert
         }
         Invoke-SQLQuery @queryInsertSplatParams -Data ([ref]$queryInsertResult)
 
@@ -182,9 +182,9 @@ try{
         Write-Information "Successfully queried data from table '$($table)'. Returned rows: $($querySelectResult.Rows.Count)"
 
         $auditLogs.Add([PSCustomObject]@{
-            Message = "Successfully updated data in table '$($table)'. Query: $($queryInsert)"
-            IsError = $false;
-        });   
+                Message = "Successfully updated data in table '$($table)'. Query: $($queryInsert)"
+                IsError = $false;
+            });   
     }
     catch {
         # Clean up error variables
