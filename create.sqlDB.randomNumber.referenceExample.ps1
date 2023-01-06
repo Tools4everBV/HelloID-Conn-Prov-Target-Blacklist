@@ -123,6 +123,7 @@ try {
         $querySelectSplatParams = @{
             ConnectionString = $connectionString
             SqlQuery         = $querySelect
+            ErrorAction      = 'Stop'
         }
         Invoke-SQLQuery @querySelectSplatParams -Data ([ref]$querySelectResult)
 
@@ -167,22 +168,23 @@ try {
         VALUES
             ('$uniqueValue')"
     
-        Write-Verbose "Updating data in table '$($table)'. Query: $($queryInsert)"
+        Write-Verbose "Inserting data in table '$($table)'. Query: $($queryInsert)"
 
         $queryInsertResult = [System.Collections.ArrayList]::new()
         $queryInsertSplatParams = @{
             ConnectionString = $connectionString
             SqlQuery         = $queryInsert
+            ErrorAction      = 'Stop'
         }
         Invoke-SQLQuery @queryInsertSplatParams -Data ([ref]$queryInsertResult)
 
         # Set aRef object for use in futher actions
         $aRef = $uniqueValue
 
-        Write-Information "Successfully queried data from table '$($table)'. Returned rows: $($querySelectResult.Rows.Count)"
+        Write-Information "Successfully inserted data in table '$($table)'. Query: $($queryInsert)"
 
         $auditLogs.Add([PSCustomObject]@{
-                Message = "Successfully updated data in table '$($table)'. Query: $($queryInsert)"
+                Message = "Successfully inserted data in table '$($table)'. Query: $($queryInsert)"
                 IsError = $false;
             });   
     }
@@ -203,7 +205,7 @@ try {
         Write-Verbose "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($verboseErrorMessage)"
 
         $auditLogs.Add([PSCustomObject]@{
-                Message = "Error updating data in table '$($table)'. Query: $($queryInsert). Error Message: $auditErrorMessage"
+                Message = "Error inserting data in table '$($table)'. Query: $($queryInsert). Error Message: $auditErrorMessage"
                 IsError = $True
             })
     }
