@@ -1,0 +1,45 @@
+[
+    {
+        "key": "csvPath",
+        "type": "input",
+        "defaultValue": "C:\\HelloID\\blacklist.csv",
+        "templateOptions": {
+            "label": "CSV Path",
+            "placeholder": "C:\\HelloID\\blacklist.csv",
+            "description": "",
+            "required": true
+        }
+    },
+    {
+        "key": "csvDelimiter",
+        "type": "input",
+        "defaultValue": ";",
+        "templateOptions": {
+            "label": "CSV delimiter",
+            "placeholder": ";",
+            "description": "",
+            "required": true
+        }
+    },
+    {
+        "key": "csvEncoding",
+        "type": "input",
+        "defaultValue": "UTF8",
+        "templateOptions": {
+            "label": "CSV encoding",
+            "placeholder": "UTF8",
+            "description": "",
+            "required": true
+        }
+    },
+    {
+        "key": "isDebug",
+        "type": "checkbox",
+        "defaultValue": false,
+        "templateOptions": {
+            "label": "Toggle debug logging",
+            "description": "When toggled, debug logging will be displayed for PowerShell actions such as Check on External Systems and Post Actions.",
+            "required": false
+        }
+    }
+]
