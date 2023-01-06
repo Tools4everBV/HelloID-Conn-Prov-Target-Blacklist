@@ -28,8 +28,8 @@
     "templateOptions": {
       "label": "Column",
       "placeholder": "uniqueValue",
-      "description": "The column in which the blacklist values reside",
-      "required": true
+      "description": "Optional: The column in which the blacklist values reside preferably defined in the script itself",
+      "required": false
     }
   }
 ]
