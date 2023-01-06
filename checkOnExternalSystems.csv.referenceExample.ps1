@@ -31,7 +31,7 @@ $csvEncoding = $c.csvEncoding
 
 #region Change mapping here
 $valuesToCheck = [PSCustomObject]@{
-    'samAccountName'                     = $a.samaccountname # Please make sure the CSV headers match the HelloID attribute name
+    'SamAccountName'                     = $a.samaccountname # Please make sure the CSV headers match the HelloID attribute name
     'AdditionalFields.userPrincipalName' = $a.AdditionalFields.userPrincipalName # Please make sure the CSV headers match the HelloID attribute name
 }
 #endregion Change mapping here
@@ -41,7 +41,7 @@ $valuesToCheck = [PSCustomObject]@{
 # $csvDelimiter = ";"
 # $csvEncoding = "UTF8"
 # $valuesToCheck = [PSCustomObject]@{
-#     'samAccountName'                     = 'test1'
+#     'SamAccountName'                     = 'test1'
 #     'AdditionalFields.userPrincipalName' = 'test1@test.nl'
 # }
 
