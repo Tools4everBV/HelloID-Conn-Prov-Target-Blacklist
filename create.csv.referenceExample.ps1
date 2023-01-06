@@ -91,7 +91,7 @@ finally {
         # Optionally return data for use in other systems
         ExportData       = [PSCustomObject]@{
             SamAccountName    = $account.'SamAccountName' 
-            userPrincipalName = $account.'AdditionalFields.userPrincipalName'
+            UserPrincipalName = $account.'AdditionalFields.userPrincipalName'
         }
     }
 
