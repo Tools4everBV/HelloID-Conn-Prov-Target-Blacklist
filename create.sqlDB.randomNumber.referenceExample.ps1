@@ -156,7 +156,7 @@ try {
         $currentValues = $querySelectResult."$($column)" | Sort-Object 
         $excludeRange = $currentValues
         $randomRange = $inputRange | Where-Object { $excludeRange -notcontains $_ }
-        if ($randomRange -eq $null) {
+        if ($null -eq $randomRange) {
             throw "Error generating random value: No more values allowed. Please adjust the range. Current range: $($inputRange | Select-Object -First 1) to $($inputRange | Select-Object -Last 1)"
         }
         $uniqueValue = Get-Random -InputObject $randomRange
@@ -215,7 +215,7 @@ finally {
     if (-NOT($auditLogs.IsError -contains $true)) {
         $success = $true
     }
-    
+
     # Send results
     $result = [PSCustomObject]@{
         Success          = $success
