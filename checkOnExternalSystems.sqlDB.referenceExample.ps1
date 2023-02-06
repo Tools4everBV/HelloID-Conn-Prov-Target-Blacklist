@@ -30,10 +30,22 @@ $username = $c.username
 $password = $c.password
 $table = $c.table
 
+
+
 #region Change mapping here
 $valuesToCheck = [PSCustomObject]@{
-    'SamAccountName'                     = $a.samaccountname # Please make sure the database columns match the HelloID attribute name
-    'AdditionalFields.userPrincipalName' = $a.AdditionalFields.userPrincipalName # Please make sure the database columns match the HelloID attribute name
+    'SamAccountName'    = [PSCustomObject]@{
+        accountValue = $a.samaccountname
+        databaseColumn    = 'SamAccountName' # Please make sure the database columns match the HelloID attribute name
+    }
+    'UserPrincipalName' = [PSCustomObject]@{
+        accountValue = $a.AdditionalFields.userPrincipalName
+        databaseColumn    = 'AdditionalFields.userPrincipalName' # Please make sure the database columns match the HelloID attribute name
+    }
+    'MailNickName'      = [PSCustomObject]@{
+        accountValue = $a.AdditionalFields.mailNickName
+        databaseColumn    = 'SamAccountName' # Please make sure the database columns match the HelloID attribute name
+    }
 }
 #endregion Change mapping here
 
@@ -44,6 +56,66 @@ $valuesToCheck = [PSCustomObject]@{
 # }
 
 #region functions
+function Resolve-HTTPError {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory,
+            ValueFromPipeline
+        )]
+        [object]$ErrorObject
+    )
+    process {
+        $httpErrorObj = [PSCustomObject]@{
+            FullyQualifiedErrorId = $ErrorObject.FullyQualifiedErrorId
+            MyCommand             = $ErrorObject.InvocationInfo.MyCommand
+            RequestUri            = $ErrorObject.TargetObject.RequestUri
+            ScriptStackTrace      = $ErrorObject.ScriptStackTrace
+            ErrorMessage          = ''
+        }
+        if ($ErrorObject.Exception.GetType().FullName -eq 'Microsoft.PowerShell.Commands.HttpResponseException') {
+            $httpErrorObj.ErrorMessage = $ErrorObject.ErrorDetails.Message
+        }
+        elseif ($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException') {
+            $httpErrorObj.ErrorMessage = [System.IO.StreamReader]::new($ErrorObject.Exception.Response.GetResponseStream()).ReadToEnd()
+        }
+        Write-Output $httpErrorObj
+    }
+}
+
+function Get-ErrorMessage {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory,
+            ValueFromPipeline
+        )]
+        [object]$ErrorObject
+    )
+    process {
+        $errorMessage = [PSCustomObject]@{
+            VerboseErrorMessage = $null
+            AuditErrorMessage   = $null
+        }
+
+        if ( $($ErrorObject.Exception.GetType().FullName -eq 'Microsoft.PowerShell.Commands.HttpResponseException') -or $($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException')) {
+            $httpErrorObject = Resolve-HTTPError -Error $ErrorObject
+
+            $errorMessage.VerboseErrorMessage = $httpErrorObject.ErrorMessage
+
+            $errorMessage.AuditErrorMessage = $httpErrorObject.ErrorMessage
+        }
+
+        # If error message empty, fall back on $ex.Exception.Message
+        if ([String]::IsNullOrEmpty($errorMessage.VerboseErrorMessage)) {
+            $errorMessage.VerboseErrorMessage = $ErrorObject.Exception.Message
+        }
+        if ([String]::IsNullOrEmpty($errorMessage.AuditErrorMessage)) {
+            $errorMessage.AuditErrorMessage = $ErrorObject.Exception.Message
+        }
+
+        Write-Output $errorMessage
+    }
+}
+
 function Invoke-SQLQuery {
     param(
         [parameter(Mandatory = $true)]
@@ -144,62 +216,41 @@ try {
         Write-Information "Successfully queried data from table '$($table)'. Returned rows: $($querySelectResult.Rows.Count)"
     }
     catch {
-        # Clean up error variables
-        $verboseErrorMessage = $null
-        $auditErrorMessage = $null
-
         $ex = $PSItem
-        # If error message empty, fall back on $ex.Exception.Message
-        if ([String]::IsNullOrEmpty($verboseErrorMessage)) {
-            $verboseErrorMessage = $ex.Exception.Message
-        }
-        if ([String]::IsNullOrEmpty($auditErrorMessage)) {
-            $auditErrorMessage = $ex.Exception.Message
-        }
+        $errorMessage = Get-ErrorMessage -ErrorObject $ex
 
-        Write-Verbose "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($verboseErrorMessage)"
+        Write-Verbose "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($errorMessage.VerboseErrorMessage)"
 
         $auditLogs.Add([PSCustomObject]@{
-                Message = "Error querying data from table '$($table)'. Query: $($querySelect). Error Message: $auditErrorMessage"
+                Message = "Error querying data from table '$($table)'. Query: $($querySelect). Error Message: $($errorMessage.AuditErrorMessage)"
                 IsError = $True
             })
     }
 
     # Check values against database data
     Try {
-        # Write-Warning ($querySelectResult | convertto-json)
         foreach ($valueToCheck in $valuesToCheck.PsObject.Properties) {
-            if ($valueToCheck.Value -in $querySelectResult."$($valueToCheck.Name)") {
-                Write-Warning "Value '$($valueToCheck.Value)' is NOT unique in database column '$($valueToCheck.Name)'"
+            if ($valueToCheck.Value.accountValue -in $querySelectResult."$($valueToCheck.Value.databaseColumn)") {
+                Write-Warning "$($valueToCheck.Name) value '$($valueToCheck.Value.accountValue)' is NOT unique in database column '$($valueToCheck.Value.databaseColumn)'"
                 [void]$NonUniqueFields.Add("$($valueToCheck.Name)")
             }
             else {
-                Write-Information "Value '$($valueToCheck.Value)' is unique in database column '$($valueToCheck.Name)'"
+                Write-Verbose "$($valueToCheck.Name) value '$($valueToCheck.Value.accountValue)' is unique in database column '$($valueToCheck.Value.databaseColumn)'"
             }
         }
     }
     catch {
-        # Clean up error variables
-        $verboseErrorMessage = $null
-        $auditErrorMessage = $null
-
         $ex = $PSItem
-        # If error message empty, fall back on $ex.Exception.Message
-        if ([String]::IsNullOrEmpty($verboseErrorMessage)) {
-            $verboseErrorMessage = $ex.Exception.Message
-        }
-        if ([String]::IsNullOrEmpty($auditErrorMessage)) {
-            $auditErrorMessage = $ex.Exception.Message
-        }
+        $errorMessage = Get-ErrorMessage -ErrorObject $ex
 
-        Write-Verbose "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($verboseErrorMessage)"
+        Write-Verbose "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($errorMessage.VerboseErrorMessage)"
 
         $auditLogs.Add([PSCustomObject]@{
-                Message = "Error checking values against database data. Error Message: $auditErrorMessage"
+                Message = "Error checking values against database data. Error Message: $($errorMessage.AuditErrorMessage)"
                 IsError = $True
             })
 
-        throw "Error checking values against database data. Error Message: $auditErrorMessage"
+        throw "Error checking values against database data. Error Message: $($errorMessage.AuditErrorMessage)"
     }
 }
 catch {
