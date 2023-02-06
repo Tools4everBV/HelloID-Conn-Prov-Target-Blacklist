@@ -106,7 +106,7 @@ try {
     try {
         Write-Verbose "Querying AD users"
 
-        $adUsers = Get-ADUser -Filter * -Properties $valuesToCheck.PsObject.Properties.Name
+        $adUsers = Get-ADUser -Filter * -Properties (@("employeeID") + $valuesToCheck.PsObject.Properties.Name)
         $adUsersGrouped = $adUsers | Group-Object -Property employeeID -AsString -AsHashTable
 
         Write-Information "Successfully queried AD users. Result count: $(($adUsers | Measure-Object).Count)"
