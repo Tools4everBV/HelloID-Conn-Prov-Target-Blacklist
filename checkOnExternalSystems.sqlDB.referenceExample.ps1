@@ -34,26 +34,20 @@ $table = $c.table
 
 #region Change mapping here
 $valuesToCheck = [PSCustomObject]@{
-    'SamAccountName'    = [PSCustomObject]@{
+    'SamAccountName'    = [PSCustomObject]@{ # This is the value that is returned to HelloID in NonUniqueFields
         accountValue = $a.samaccountname
         databaseColumn    = 'SamAccountName' # Please make sure the database columns match the HelloID attribute name
     }
-    'UserPrincipalName' = [PSCustomObject]@{
+    'AdditionalFields.UserPrincipalName' = [PSCustomObject]@{ # This is the value that is returned to HelloID in NonUniqueFields
         accountValue = $a.AdditionalFields.userPrincipalName
         databaseColumn    = 'AdditionalFields.userPrincipalName' # Please make sure the database columns match the HelloID attribute name
     }
-    'MailNickName'      = [PSCustomObject]@{
+    'MailNickName'      = [PSCustomObject]@{ # This is the value that is returned to HelloID in NonUniqueFields
         accountValue = $a.AdditionalFields.mailNickName
         databaseColumn    = 'SamAccountName' # Please make sure the database columns match the HelloID attribute name
     }
 }
 #endregion Change mapping here
-
-# Troubleshooting
-# $account = [PSCustomObject]@{
-#     'SamAccountName'                     = 'test1'
-#     'AdditionalFields.userPrincipalName' = 'test1@test.nl'
-# }
 
 #region functions
 function Resolve-HTTPError {
@@ -193,7 +187,7 @@ try {
         [System.Collections.ArrayList]$queryInsertProperties = @()
         foreach ($property in $valuesToCheck.PSObject.Properties) {
             # Enclose Name with brackets []
-            $null = $queryInsertProperties.Add("[$($property.Name)]")
+            $null = $queryInsertProperties.Add("[$($property.Value.databaseColumn)]")
         }
 
         $querySelect = "
